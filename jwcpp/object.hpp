@@ -3,20 +3,27 @@
 
 #include <string>
 #include <unordered_map>
+#include <ostream>
+#include <istream>
 
 namespace JWCpp
 {
-    class NvpBase;
+    class PropertyBase;
     class Object
     {
 	private:
-	    typedef std::unordered_map<std::string, NvpBase*> MapNvp;
+	    typedef std::unordered_map<std::string, PropertyBase*> Properties;
 
 	private:
-	    MapNvp map_nvp;
+	    Properties properties;
 
-	friend class JWCpp::NvpBase;
+	friend class JWCpp::PropertyBase;
+	friend std::ostream& JWCpp::operator<<(std::ostream &_out, const JWCpp::Object &_object);
+	friend std::istream& JWCpp::operator>>(std::istream &_in, JWCpp::Object &_object);
     };
+
+    std::ostream& operator<<(std::ostream &_out, const JWCpp::Object &_object);
+    std::istream& operator>>(std::istream &_in, JWCpp::Object &_object);
 }
 
 #endif //_JWCPP_OBJECT_HPP_
