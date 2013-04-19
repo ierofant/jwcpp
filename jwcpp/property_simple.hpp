@@ -9,7 +9,9 @@ namespace JWCpp
     class PropertySimple : public JWCpp::PropertyBase
     {
 	public:
+	    const T& operator*() const {return get_value();}
 	    const T* operator->() const {return &get_value();}
+	    T& operator*() {return get_value();}
 	    T* operator->() {return &get_value();}
 
 	public:

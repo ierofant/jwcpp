@@ -19,7 +19,7 @@ namespace JWCpp
 
 	protected:
 	    virtual void push_to_stream(std::ostream &_out) const override {_out << this->get_value();}
-	    virtual void pop_from_stream(std::istream &_in) override {_in >> this->get_value();}
+	    virtual void pop_from_stream(std::istream &_in) override {if(_in.good()) _in >> this->get_value();}
     };
 
     template<typename T>
@@ -31,7 +31,7 @@ namespace JWCpp
 
 	protected:
 	    virtual void push_to_stream(std::ostream &_out) const override {_out << this->get_value();}
-	    virtual void pop_from_stream(std::istream &_in) override {_in >> this->get_value();}
+	    virtual void pop_from_stream(std::istream &_in) override {if(_in.good()) _in >> this->get_value();}
     };
 
     template<typename T>
@@ -50,14 +50,32 @@ namespace JWCpp
 		{
 		    if(is_first) is_first = false;
 		    else _out << ',';
-
-		    JWCpp::Property<T> property(this->get_object(), "");
+		    
+		    JWCpp::Property<T> property(const_cast<JWCpp::Object&>(this->get_object()), "");
 		    _out << property;
 		};
-		std::for_each(this->get_value().begin(), this->get_value().end(), &func);
+		std::for_each(this->get_value().begin(), this->get_value().end(), func);
 		_out << ']';
 	    }
-    	    virtual void pop_from_stream(std::istream &_in) override {}
+    	    virtual void pop_from_stream(std::istream &_in) override 
+	    {
+		std::vector<T> &value = this->get_value();
+		value.clear();		
+
+		_in >> std::ws;
+		if(_in.get() == '[')
+		{
+		    for(int sym = _in.get(); _in.good() && sym != ']'; sym = _in.get())
+		    {
+			JWCpp::Property<T> property(this->get_object(), "");
+			_in >> std::ws >> property;
+			value.push_back(*property);
+			
+			_in >> std::ws;
+			if(_in.get() == ',') break;
+		    }
+		}
+	    }
     };
 
     template<>
@@ -69,7 +87,17 @@ namespace JWCpp
 
 	protected:
 	    virtual void push_to_stream(std::ostream &_out) const override {_out << '"' << this->get_value() << '"';}
-	    virtual void pop_from_stream(std::istream &_in) override {}
+	    virtual void pop_from_stream(std::istream &_in) override 
+	    {
+		std::string &value = this->get_value();
+		value.clear();
+
+		_in >> std::ws;
+		if(_in.get() == '"')
+		{
+		    for(int sym = _in.get(); _in.good() && sym != '"'; sym = _in.get()) value += sym;
+		}
+	    }
     };
 }
 
