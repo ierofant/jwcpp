@@ -45,16 +45,18 @@ namespace JWCpp
 	    virtual void push_to_stream(std::ostream &_out) const override
 	    {
 		_out << '[';
+
 		bool is_first = true;
-		auto func = [&](const T &_value)
+		for(auto &x: this->get_value())
 		{
 		    if(is_first) is_first = false;
 		    else _out << ',';
 		    
 		    JWCpp::Property<T> property(const_cast<JWCpp::Object&>(this->get_object()), "");
+		    property.set_value(x);
 		    _out << property;
-		};
-		std::for_each(this->get_value().begin(), this->get_value().end(), func);
+		}
+
 		_out << ']';
 	    }
     	    virtual void pop_from_stream(std::istream &_in) override 
@@ -65,14 +67,14 @@ namespace JWCpp
 		_in >> std::ws;
 		if(_in.get() == '[')
 		{
-		    for(int sym = _in.get(); _in.good() && sym != ']'; sym = _in.get())
+		    while(_in.good())
 		    {
 			JWCpp::Property<T> property(this->get_object(), "");
 			_in >> std::ws >> property;
 			value.push_back(*property);
 			
 			_in >> std::ws;
-			if(_in.get() == ',') break;
+			if(_in.get() != ',') break;
 		    }
 		}
 	    }
@@ -93,10 +95,10 @@ namespace JWCpp
 		value.clear();
 
 		_in >> std::ws;
+
 		if(_in.get() == '"')
-		{
-		    for(int sym = _in.get(); _in.good() && sym != '"'; sym = _in.get()) value += sym;
-		}
+		    for(int sym = _in.get(); _in.good() && sym != '"'; sym = _in.get())
+			value += sym;
 	    }
     };
 }
