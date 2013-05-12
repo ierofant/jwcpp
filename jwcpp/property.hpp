@@ -79,6 +79,28 @@ namespace JWCpp
 		}
 	    }
     };
+    
+    template<>
+    class Property<bool> : public JWCpp::PropertySimple<bool>
+    {
+	public:
+	    Property(Object &_object, const std::string &_name) : JWCpp::PropertySimple<bool>(_object, _name){}
+	    virtual ~Property() = default;
+
+	protected:
+	    virtual void push_to_stream(std::ostream &_out) const override {_out << get_value() ? "true" : "false";}
+	    virtual void pop_from_stream(std::istream &_in) override
+	    {
+		_in >> std::ws;
+		std::string str;
+		for(int sym = _in.peek(); _in.good() && sym != ','; sym = _in.peek())
+		{
+		    sym = _in.get();
+		    str += sym;
+		}
+		set_value(str == "true" ? true : false);
+	    }
+    };
 
     template<>
     class Property<std::string> : public JWCpp::PropertySimple<std::string>

@@ -41,7 +41,17 @@ std::istream& JWCpp::operator>>(std::istream &_in, JWCpp::Object &_object)
 	    if(itr != _object.properties.end()) _in >> *(itr->second);
 	    else
 	    {
-
+		unsigned depth = 0;
+		while(_in.good())
+		{
+		    int sym = _in.get();
+		    if(sym == '}')
+		    {
+			if(depth == 0) break;
+			else --depth;
+		    }
+		    else if(sym == '{') ++depth;
+		}
 	    }
 
 	    _in >> std::ws;
